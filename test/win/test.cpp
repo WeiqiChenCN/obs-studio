@@ -11,6 +11,7 @@
 
 static const int cx = 800;
 static const int cy = 600;
+#define GREY_COLOR_BACKGROUND 0xFF4C4C4C
 
 /* --------------------------------------------------- */
 
@@ -91,7 +92,7 @@ static void CreateOBS(HWND hwnd)
 	ovi.base_height = rc.bottom;
 	ovi.fps_num = 30000;
 	ovi.fps_den = 1001;
-	ovi.graphics_module = DL_OPENGL;
+	ovi.graphics_module = "libobs-d3d11";
 	ovi.output_format = VIDEO_FORMAT_RGBA;
 	ovi.output_width = rc.right;
 	ovi.output_height = rc.bottom;
@@ -104,6 +105,7 @@ static DisplayContext CreateDisplay(HWND hwnd)
 {
 	RECT rc;
 	GetClientRect(hwnd, &rc);
+	uint32_t backgroundColor = GREY_COLOR_BACKGROUND;
 
 	gs_init_data info = {};
 	info.cx = rc.right;
@@ -112,7 +114,7 @@ static DisplayContext CreateDisplay(HWND hwnd)
 	info.zsformat = GS_ZS_NONE;
 	info.window.hwnd = hwnd;
 
-	return obs_display_create(&info);
+	return obs_display_create(&info, backgroundColor);
 }
 
 static void AddTestItems(obs_scene_t *scene, obs_source_t *source)
