@@ -1,5 +1,7 @@
 #pragma once
 
+#include <obs.hpp>
+
 #include <QWidget>
 #include <QMetaObject>
 #include <QApplication>
@@ -14,6 +16,7 @@ public:
 protected slots:
 protected:
 	OBSSource source;
+	OBSScene scene;
 
 };
 
