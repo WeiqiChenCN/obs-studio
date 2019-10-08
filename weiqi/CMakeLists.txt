@@ -23,9 +23,11 @@ set(weiqi-obs_src weiqi-obs.cpp weiqi-obs.h)
 
 add_executable(weiqi-obs ${weiqi-obs_src})
 
+
 target_link_libraries(weiqi-obs
 	libobs
 	Qt5::Widgets)
 
 
 define_graphic_modules(weiqi-obs)
+install_obs_core(weiqi-obs)
