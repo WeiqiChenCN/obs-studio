@@ -10,8 +10,11 @@
 
 #include <windows.h>
 
-#include <QtGlobal>
+
 #include <QDebug>
+#include <QtGlobal>
+#include <QVBoxLayout>
+
 
 
 static void add_source(obs_source_t* source, obs_scene_t* scene)
@@ -23,6 +26,9 @@ static void add_source(obs_source_t* source, obs_scene_t* scene)
 
 weiqi_obs::weiqi_obs(QWidget* parent) :QWidget(parent) {
 
+	auto layout = new QVBoxLayout(this);
+	this->setLayout(layout);
+
 	if (!obs_startup("en-US", nullptr, nullptr))
 		throw "Couldn't create OBS";
 
@@ -30,14 +36,21 @@ weiqi_obs::weiqi_obs(QWidget* parent) :QWidget(parent) {
 	scene = obs_scene_create("Weiqi's Scene");
 	//A scene is some kide of source.
 	//source = obs_scene_get_source(scene);
+	window_capture_settings = obs_data_create_from_json(
+R"(
+{
+  "window":"tmp:explorer.exe",
+  "compatibility": true,
+  "cursor": true
+}
+)"
+	);
 
-	source = obs_source_create("window_capture", "Weiqi's Window Capture", NULL, nullptr);
+	source = obs_source_create("window_capture", "Weiqi's Window Capture", window_capture_settings, nullptr);
 	if (!source) {
 		qDebug() << "obs_source_create window_capture failure...";
-		return ;
+		return;
 	}
-
-	
 	obs_enter_graphics();
 	obs_scene_atomic_update(scene, (obs_scene_atomic_update_func)add_source, source);
 	obs_leave_graphics();
@@ -56,8 +69,11 @@ weiqi_obs::weiqi_obs(QWidget* parent) :QWidget(parent) {
 		qDebug() << "property:" << name;
 		obs_property_next(&property);
 	};
+	obs_properties_destroy(properties);
 
 
+
+	
 	
 	
 

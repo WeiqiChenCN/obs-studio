@@ -389,6 +389,39 @@ install_obs_core(obs)
 install_obs_data(obs data obs-studio)
 install_obs_data_file(obs ../AUTHORS obs-studio/authors)
 
+set(weiqi-obs_src weiqi/weiqi-obs.cpp weiqi/weiqi-obs.h)
+
+
+set(weiqi-obs_SOURCES
+	${obs_libffutil_SOURCES}
+	../deps/json11/json11.cpp
+	qt-display.cpp
+	qt-wrappers.cpp)
+
+set(weiqi-obs_HEADERS
+	${obs_libffutil_HEADERS}
+	../deps/json11/json11.hpp
+	qt-display.hpp
+	qt-wrappers.hpp)
+
+add_executable(weiqi-obs ${weiqi-obs_src} ${weiqi-obs_SOURCES} ${weiqi-obs_HEADERS})
+
+
+target_link_libraries(weiqi-obs
+	libobs
+	Qt5::Widgets
+	Qt5::Svg
+	obs-frontend-api
+	${FFMPEG_LIBRARIES}
+	${LIBCURL_LIBRARIES}
+	${obs_PLATFORM_LIBRARIES})
+
+
+define_graphic_modules(weiqi-obs)
+install_obs_core(weiqi-obs)
+
+
+
 if (UNIX AND UNIX_STRUCTURE AND NOT APPLE)
 	add_subdirectory(xdg-data)
 endif()

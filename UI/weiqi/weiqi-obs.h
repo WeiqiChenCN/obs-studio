@@ -2,6 +2,7 @@
 
 
 #include <obs.hpp>
+#include <qt-display.hpp>
 
 #include <QWidget>
 #include <QMetaObject>
@@ -18,6 +19,7 @@ protected slots:
 protected:
 	OBSSource source;
 	OBSScene scene;
+	OBSSource scene_source;
 	OBSData window_capture_settings;
 
 

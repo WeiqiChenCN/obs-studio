@@ -21,13 +21,16 @@ include_directories(${Qt5Widgets_INCLUDE_DIRS})
 
 set(weiqi-obs_src weiqi-obs.cpp weiqi-obs.h)
 
-add_executable(weiqi-obs ${weiqi-obs_src})
+include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/UI")
 
 
-target_link_libraries(weiqi-obs
+add_executable(weiqi-obs-OLD ${weiqi-obs_src})
+
+
+target_link_libraries(weiqi-obs-OLD
 	libobs
 	Qt5::Widgets)
 
 
-define_graphic_modules(weiqi-obs)
-install_obs_core(weiqi-obs)
+define_graphic_modules(weiqi-obs-OLD)
+install_obs_core(weiqi-obs-OLD)
