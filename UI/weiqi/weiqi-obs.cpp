@@ -19,7 +19,7 @@
 
 static void render_window(void* data, uint32_t cx, uint32_t cy)
 {
-	std::cerr << __FUNCTION__;
+	qDebug() << __FUNCTION__;
 	obs_render_main_texture();
 
 	UNUSED_PARAMETER(data);
@@ -50,6 +50,50 @@ static void init_global() {
 	obs_load_all_modules();
 }
 
+static void dump_properties_list(obs_properties_t* property)
+{
+	//auto settings = obs_data_create();
+	auto settings = obs_data_create_from_json(R"({"window":[]})");
+	
+	obs_properties_apply_settings(property, settings);
+	obs_data_save_json(settings, "dump_propertites.txt");
+	//auto window = obs_data_get_array(settings, "window");
+	obs_data_release(settings);
+}
+
+static void print_properties(const char* id)
+{
+	auto properties = obs_get_source_properties(id);
+	if (!properties) {
+		qDebug() << "Failure in" << __FUNCTION__;
+		throw __FUNCTION__;
+	}
+	dump_properties_list(properties);
+#if 0
+	auto property = obs_properties_first(properties);
+	while (property) {
+		auto name = obs_property_name(property);
+		qDebug() << "property[name]:" << name;
+		auto description = obs_property_description(property);
+		qDebug() << "property[description]:" << description;
+		auto type = obs_property_get_type(property);
+		switch (type) {
+		case OBS_PROPERTY_BOOL: qDebug() << "property[value]:" << obs_property_enabled(property); break;
+		case OBS_PROPERTY_LIST:
+
+			break;
+		case OBS_PROPERTY_INT:; break;
+		case OBS_PROPERTY_TEXT:; break;
+		default: break;
+		}
+		obs_property_next(&property);
+	};
+#endif
+	obs_properties_destroy(properties);
+
+
+}
+
 static void add_source(obs_source_t* source, obs_scene_t* scene)
 {
 	obs_sceneitem_t* sceneitem;
@@ -69,16 +113,9 @@ weiqi_obs::weiqi_obs(QWidget* parent) :QWidget(parent) {
 	scene = obs_scene_create("Weiqi's Scene");
 	//A scene is some kide of source.
 	//source = obs_scene_get_source(scene);
-
-	window_capture_settings = obs_data_create_from_json(
-R"(
-{
-  "window":"64bit:*:explorer.exe",
-  "compatibility": true,
-  "cursor": true
-}
-)"
-	);
+	OBSData default_window_capture_settings = obs_get_source_defaults("window_capture");
+	window_capture_settings = obs_data_create_from_json(R"({"window":"cmd:ConsoleWindowClass:cmd.exe"})");
+	obs_data_apply(window_capture_settings, default_window_capture_settings);
 #if 1
 	source = obs_source_create("window_capture", "Weiqi's Window Capture", window_capture_settings, nullptr);
 	if (!source) {
@@ -104,13 +141,19 @@ R"(
 	obs_scene_atomic_update(scene, (obs_scene_atomic_update_func)add_source, source);
 	obs_leave_graphics();
 #else
-	obs_sceneitem_t* item = NULL;
-	item = obs_scene_add(scene, source);
+	obs_sceneitem_t* item = obs_scene_add(scene, source);
+	if (!item) {
+		qDebug() << "obs_scene_add failure..";
+		throw "obs_scene_add failure..";
+	}
 	struct vec2 vec2;
 	vec2_set(&vec2, 20.0f, 20.0f);
 	obs_sceneitem_set_scale(item, &vec2);
 	vec2_set(&vec2, 0, 0);
 	obs_sceneitem_set_pos(item, &vec2);
+	obs_sceneitem_set_alignment(item, OBS_ALIGN_CENTER);
+	
+
 
 #endif
 #if 0
@@ -122,23 +165,13 @@ R"(
 			OBS_MONITORING_TYPE_MONITOR_ONLY);
 	}
 #endif
-#if 0
-	auto properties = obs_source_properties(source);
-	auto property = obs_properties_first(properties);
-	while (property) {
-		auto name = obs_property_name(property);
-		qDebug() << "property:" << name;
-		obs_property_next(&property);
-	};
-	obs_properties_destroy(properties);
-#endif
 
 	scene_source = obs_scene_get_source(scene);
 	obs_set_output_source(0, scene_source);
-	obs_source_inc_showing(scene_source);
-	obs_source_inc_showing(source);
+	//obs_source_inc_showing(scene_source);
+	//obs_source_inc_showing(source);
 	
-	auto display = new OBSQTDisplay(this);
+	display = new OBSQTDisplay(this);
 	layout->addWidget(display);
 	obs_display_set_enabled(display->GetDisplay(), true);
 	obs_display_add_draw_callback(display->GetDisplay(), render_window, nullptr);
@@ -151,12 +184,24 @@ void weiqi_obs::run() {
 	
 }
 
+void weiqi_obs::render_window(void* data, uint32_t cx, uint32_t cy)
+{
+	qDebug() << __FUNCTION__;
+	auto me = (weiqi_obs*)data;
+	obs_source_video_render(me->scene_source);
+	obs_render_main_texture();
+	UNUSED_PARAMETER(data);
+	UNUSED_PARAMETER(cx);
+	UNUSED_PARAMETER(cy);
+}
+
 
 
 int main(int argc, char* argv[])
 {
     QApplication qapp(argc, argv);
     init_global();
+    print_properties("window_capture");
     weiqi_obs obs(nullptr);
     obs.show();
     return qapp.exec();

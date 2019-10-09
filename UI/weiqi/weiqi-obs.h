@@ -15,13 +15,13 @@ public:
 	weiqi_obs(QWidget* parent);
 	~weiqi_obs();
 	void run();
+	static void render_window(void* data, uint32_t cx, uint32_t cy);
 protected slots:
 protected:
-	OBSSource source;
-	OBSScene scene;
-	OBSSource scene_source;
-	OBSData window_capture_settings;
-
-
+	obs_scene_t* scene;
+	obs_source_t* source;
+	obs_source_t* scene_source;
+	obs_data_t* window_capture_settings;
+	OBSQTDisplay* display;
 };
 
