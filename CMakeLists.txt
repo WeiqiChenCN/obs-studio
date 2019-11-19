@@ -183,7 +183,6 @@ if(NOT INSTALLER_RUN)
 	endif()
 
 	add_subdirectory(cmake/helper_subdir)
-	add_subdirectory(weiqi)
 else()
 	obs_generate_multiarch_installer()
 endif()
