@@ -401,10 +401,17 @@ static void find_modules_in_path(struct obs_module_path *omp,
 
 	if (os_glob(search_path.array, 0, &gi) == 0) {
 		for (size_t i = 0; i < gi->gl_pathc; i++) {
-			if (search_directories == gi->gl_pathv[i].directory)
+			if (search_directories == gi->gl_pathv[i].directory) {
+				if (strstr(gi->gl_pathv[i].path,
+					   "frontend-tools"))
+					continue;
+
+
+
 				process_found_module(omp, gi->gl_pathv[i].path,
 						     search_directories,
 						     callback, param);
+			}
 		}
 
 		os_globfree(gi);
