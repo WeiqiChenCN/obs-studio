@@ -98,6 +98,7 @@ static void add_source(obs_source_t* source, obs_scene_t* scene)
 {
 	auto sceneitem = obs_scene_add(scene, source);
 	obs_sceneitem_set_visible(sceneitem, true);
+	//obs_sceneitem_release(sceneitem);
 };
 
 weiqi_obs::weiqi_obs(QWidget* parent) :QWidget(parent) {
@@ -106,24 +107,19 @@ weiqi_obs::weiqi_obs(QWidget* parent) :QWidget(parent) {
 	auto layout = new QVBoxLayout(this);
 	this->setLayout(layout);
 
-	auto scene_ = obs_scene_create("Weiqi's Scene");
-	if (!scene_) {
+	scene = obs_scene_create("Weiqi's Scene");
+	if (!scene) {
 		throw "Can't create scene!!";
 	}
-	scene = scene_;
-	obs_scene_release(scene_);
 
 	//A scene is some kide of source.
 	//source = obs_scene_get_source(scene);
-	OBSData settings(obs_get_source_defaults("window_capture"));
+	window_capture_settings = obs_get_source_defaults("window_capture");
 	//window_capture_settings = obs_data_create_from_json(
 	//	R"({"window":"Untitled - Notepad:Notepad:notepad.exe"})"
 	//);
-	obs_data_set_string(settings, "window",
-			    "Untitled - Notepad:Notepad:notepad.exe");
-	
-	//obs_data_apply(window_capture_settings, settings);
-	window_capture_settings = settings;
+	obs_data_set_string(window_capture_settings, "window",
+			    "*Untitled - Notepad:Notepad:notepad.exe");
 #if 1
 	source = obs_source_create(
 		"window_capture", "Window Capture",
@@ -131,6 +127,8 @@ weiqi_obs::weiqi_obs(QWidget* parent) :QWidget(parent) {
 	if (!source) {
 		throw "obs_source_create window_capture failure...";
 	}
+	//obs_data_release(window_capture_settings);
+
 #else
 	/* create source */
 	source = obs_source_create(
@@ -192,9 +190,11 @@ weiqi_obs::weiqi_obs(QWidget* parent) :QWidget(parent) {
 	scene_source = obs_scene_get_source(scene);
 	obs_set_output_source(0, scene_source);
 	obs_source_inc_showing(scene_source);
-	//obs_source_inc_showing(source);
+//	obs_source_inc_showing(source);
 
-	
+//	obs_scene_release(scene);
+	obs_source_release(source);
+	obs_source_release(scene_source);
 	
 
 
@@ -210,7 +210,7 @@ void weiqi_obs::render_window(void* data, uint32_t cx, uint32_t cy)
 {
 	qDebug() << __FUNCTION__;
 	auto me = (weiqi_obs*)data;
-	obs_source_video_render(me->scene_source);
+	//obs_source_video_render(me->scene_source);
 	obs_render_main_texture();
 	UNUSED_PARAMETER(cx);
 	UNUSED_PARAMETER(cy);
