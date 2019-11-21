@@ -121,7 +121,7 @@ void weiqi_obs::start_obs()
 	if (!scene) {
 		throw "Can't create scene!!";
 	}
-
+	
 	//A scene is some kide of source.
 	//source = obs_scene_get_source(scene);
 	window_capture_settings = obs_get_source_defaults("window_capture");
@@ -158,8 +158,11 @@ void weiqi_obs::start_obs()
 	obs_enter_graphics();
 	obs_scene_atomic_update(scene, (obs_scene_atomic_update_func)add_source, source);
 	obs_leave_graphics();
-	if (!obs_scene_find_source(scene, "Weiqi's Capture")) {
-		throw "source is not been added to the scene.";
+	{
+		auto _s = obs_scene_find_source(scene, "Weiqi's Capture");
+		if (!_s) {
+			throw "source is not been added to the scene.";
+		}
 	}
 #else
 	obs_sceneitem_t* item = obs_scene_add(scene, source);
@@ -201,13 +204,16 @@ void weiqi_obs::start_obs()
 		this);
 
 	scene_source = obs_scene_get_source(scene);
-	obs_set_output_source(0, scene_source);
 	obs_source_inc_showing(scene_source);
-	//	obs_source_inc_showing(source);
+	//obs_source_release(scene_source);
 
-	//	obs_scene_release(scene);
+	//This line keep source and scene alive.
+	obs_set_output_source(0, scene_source);
+
+	//obs_source_release(scene_source);
 	obs_source_release(source);
-	obs_source_release(scene_source);
+	obs_scene_release(scene);
+
 }
 
 void weiqi_obs::run() {
@@ -226,7 +232,7 @@ void weiqi_obs::render_window(void* data, uint32_t cx, uint32_t cy)
 
 void weiqi_obs::displayResize()
 {
-	std::cerr << "displayResize" << std::endl;
+	//std::cerr << "displayResize" << std::endl;
 }
 
 

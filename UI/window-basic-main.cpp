@@ -28,6 +28,7 @@
 #include <QScreen>
 #include <QColorDialog>
 #include <QSizePolicy>
+#include <QtDebug>
 
 #include <util/dstr.h>
 #include <util/util.hpp>
@@ -79,6 +80,7 @@ using namespace std;
 #endif
 
 #include "ui-config.h"
+
 
 struct QCef;
 struct QCefCookieManager;
@@ -4559,6 +4561,7 @@ QMenu *OBSBasic::CreateAddSourcePopupMenu()
 
 	auto addSource = [this, getActionAfter](QMenu *popup, const char *type,
 						const char *name) {
+		qDebug() << type<< "(" << name << ")";
 		QString qname = QT_UTF8(name);
 		QAction *popupItem = new QAction(qname, this);
 		popupItem->setData(QT_UTF8(type));
