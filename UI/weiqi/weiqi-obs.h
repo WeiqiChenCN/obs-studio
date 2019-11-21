@@ -17,6 +17,8 @@ public:
 	void run();
 	static void render_window(void* data, uint32_t cx, uint32_t cy);
 protected slots:
+	void start_obs();
+	void displayResize();
 protected:
 	obs_scene_t* scene;
 	obs_source_t* source;

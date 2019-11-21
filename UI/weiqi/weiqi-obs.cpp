@@ -12,42 +12,37 @@
 
 
 #include <QDebug>
+#include <QTimer>
 #include <QtGlobal>
 #include <QVBoxLayout>
 
 #include <iostream>
 
-static void render_window(void* data, uint32_t cx, uint32_t cy)
-{
-	qDebug() << __FUNCTION__;
-	obs_render_main_texture();
-
-	UNUSED_PARAMETER(data);
-	UNUSED_PARAMETER(cx);
-	UNUSED_PARAMETER(cy);
-}
-
 static void init_global() {
 	if (!obs_startup("en-US", nullptr, nullptr))
 		throw "Couldn't create OBS";
-
+	auto width = 1920;
+	auto height = 1080;
 	struct obs_video_info ovi;
 	ovi.adapter = 0;
 	ovi.gpu_conversion = false;
-	ovi.base_width = 1280;
-	ovi.base_height = 720;
+	ovi.base_width = width;
+	ovi.base_height = height;
 	ovi.fps_num = 30;
 	ovi.fps_den = 1;
 	ovi.graphics_module = "libobs-d3d11";
 	ovi.output_format = VIDEO_FORMAT_RGBA;
-	ovi.output_width = 1280;
-	ovi.output_height = 720;
+	ovi.output_width = width;
+	ovi.output_height = height;
 
 
 	if (obs_reset_video(&ovi) != 0)
 		throw "Couldn't initialize video";
 
 	obs_load_all_modules();
+	obs_log_loaded_modules();
+	obs_post_load_modules();
+	obs_service_create("rtmp_common", "default_service", nullptr, nullptr);
 }
 
 static void dump_properties_list(obs_properties_t* property)
@@ -65,7 +60,7 @@ static void print_properties(const char* id)
 {
 	auto properties = obs_get_source_properties(id);
 	if (!properties) {
-		qDebug() << "Failure in" << __FUNCTION__;
+		std::cout<< "Failure in" << __FUNCTION__;
 		throw __FUNCTION__;
 	}
 	dump_properties_list(properties);
@@ -96,7 +91,11 @@ static void print_properties(const char* id)
 
 static void add_source(obs_source_t* source, obs_scene_t* scene)
 {
+	std::cerr<< "add_source."<<std::endl;
 	auto sceneitem = obs_scene_add(scene, source);
+	if (!sceneitem) {
+		throw "obs_scene_add failure.";
+	}
 	obs_sceneitem_set_visible(sceneitem, true);
 	//obs_sceneitem_release(sceneitem);
 };
@@ -106,7 +105,18 @@ weiqi_obs::weiqi_obs(QWidget* parent) :QWidget(parent) {
 
 	auto layout = new QVBoxLayout(this);
 	this->setLayout(layout);
+	display = new OBSQTDisplay(this);
+	layout->addWidget(display);
+	connect(display, &OBSQTDisplay::DisplayResized, this, &weiqi_obs::displayResize);
+	QMetaObject::invokeMethod(this, "start_obs");
+};
 
+weiqi_obs::~weiqi_obs() {
+}
+
+
+void weiqi_obs::start_obs()
+{
 	scene = obs_scene_create("Weiqi's Scene");
 	if (!scene) {
 		throw "Can't create scene!!";
@@ -119,10 +129,10 @@ weiqi_obs::weiqi_obs(QWidget* parent) :QWidget(parent) {
 	//	R"({"window":"Untitled - Notepad:Notepad:notepad.exe"})"
 	//);
 	obs_data_set_string(window_capture_settings, "window",
-			    "*Untitled - Notepad:Notepad:notepad.exe");
+		"*Untitled - Notepad:Notepad:notepad.exe");
 #if 1
 	source = obs_source_create(
-		"window_capture", "Window Capture",
+		"window_capture", "Weiqi's Capture",
 		window_capture_settings, nullptr);
 	if (!source) {
 		throw "obs_source_create window_capture failure...";
@@ -148,6 +158,9 @@ weiqi_obs::weiqi_obs(QWidget* parent) :QWidget(parent) {
 	obs_enter_graphics();
 	obs_scene_atomic_update(scene, (obs_scene_atomic_update_func)add_source, source);
 	obs_leave_graphics();
+	if (!obs_scene_find_source(scene, "Weiqi's Capture")) {
+		throw "source is not been added to the scene.";
+	}
 #else
 	obs_sceneitem_t* item = obs_scene_add(scene, source);
 	if (!item) {
@@ -181,25 +194,20 @@ weiqi_obs::weiqi_obs(QWidget* parent) :QWidget(parent) {
 	}
 #endif
 
-	display = new OBSQTDisplay(this);
-	layout->addWidget(display);
 	obs_display_set_enabled(display->GetDisplay(), true);
-	obs_display_add_draw_callback(display->GetDisplay(), render_window,
-				      this);
+	obs_display_add_draw_callback(
+		display->GetDisplay(),
+		weiqi_obs::render_window,
+		this);
 
 	scene_source = obs_scene_get_source(scene);
 	obs_set_output_source(0, scene_source);
 	obs_source_inc_showing(scene_source);
-//	obs_source_inc_showing(source);
+	//	obs_source_inc_showing(source);
 
-//	obs_scene_release(scene);
+	//	obs_scene_release(scene);
 	obs_source_release(source);
 	obs_source_release(scene_source);
-	
-
-
-};
-weiqi_obs::~weiqi_obs() {
 }
 
 void weiqi_obs::run() {
@@ -208,12 +216,17 @@ void weiqi_obs::run() {
 
 void weiqi_obs::render_window(void* data, uint32_t cx, uint32_t cy)
 {
-	qDebug() << __FUNCTION__;
+	std::cerr << __FUNCTION__<<std::endl;
 	auto me = (weiqi_obs*)data;
 	//obs_source_video_render(me->scene_source);
 	obs_render_main_texture();
 	UNUSED_PARAMETER(cx);
 	UNUSED_PARAMETER(cy);
+}
+
+void weiqi_obs::displayResize()
+{
+	std::cerr << "displayResize" << std::endl;
 }
 
 
@@ -222,7 +235,7 @@ int main(int argc, char* argv[])
 {
     QApplication qapp(argc, argv);
     init_global();
-    print_properties("window_capture");
+    //print_properties("window_capture");
     weiqi_obs obs(nullptr);
     obs.show();
     return qapp.exec();
