@@ -1,0 +1,60 @@
+﻿{
+    "configurations": [
+        {
+            "name": "x64-Debug",
+            "generator": "Ninja",
+            "configurationType": "Debug",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "buildRoot": "d:\\tmp\\out\\build\\${name}",
+            "installRoot": "d:\\tmp\\out\\install\\${name}",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "variables": [
+                {
+                    "name": "QTDIR",
+                    "value": "C:/dev/Qt/5.13.0/msvc2017_64",
+                    "type": "PATH"
+                },
+                {
+                    "name": "DepsPath64",
+                    "value": "C:/dev/obs-dependencies2017/win64",
+                    "type": "PATH"
+                },
+                {
+                    "name": "BUILD_TESTS",
+                    "value": "True",
+                    "type": "BOOL"
+                }
+            ]
+        },
+        {
+            "name": "x64-RelWithDebug",
+            "generator": "Ninja",
+            "configurationType": "RelWithDebInfo",
+            "buildRoot": "d:\\tmp\\obs-studio\\build\\${name}",
+            "installRoot": "D:\\tmp\\obs-studio\\install\\${name}",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "variables": [
+                {
+                    "name": "QTDIR",
+                    "value": "C:/dev/Qt/5.12.4/msvc2017_64",
+                    "type": "PATH"
+                },
+                {
+                    "name": "DepsPath64",
+                    "value": "C:/dev/obs-dependencies2017/win64",
+                    "type": "PATH"
+                },
+                {
+                    "name": "BUILD_TESTS",
+                    "value": "True",
+                    "type": "BOOL"
+                }
+            ]
+        }
+    ]
+}
