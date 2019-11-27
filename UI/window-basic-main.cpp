@@ -4561,7 +4561,7 @@ QMenu *OBSBasic::CreateAddSourcePopupMenu()
 
 	auto addSource = [this, getActionAfter](QMenu *popup, const char *type,
 						const char *name) {
-		qDebug() << type<< "(" << name << ")";
+		qDebug() << type << "(" << name << ")";
 		QString qname = QT_UTF8(name);
 		QAction *popupItem = new QAction(qname, this);
 		popupItem->setData(QT_UTF8(type));
