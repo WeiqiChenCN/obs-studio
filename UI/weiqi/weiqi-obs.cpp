@@ -174,7 +174,7 @@ do{ \
 			HEAD();
 			break;
 		case OBS_PROPERTY_LIST:
-			//HEAD();
+			HEAD();
 			break;
 		case OBS_PROPERTY_COLOR:
 			HEAD();
