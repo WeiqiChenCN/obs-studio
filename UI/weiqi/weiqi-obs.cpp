@@ -224,8 +224,8 @@ do{ \
 	obs_set_output_source(0, scene_source);
 
 	//obs_source_release(scene_source);
-	obs_source_release(source);
-	obs_scene_release(scene);
+	//obs_source_release(source);
+	//obs_scene_release(scene);
 
 	OBSData settings = obs_source_get_settings(source);
 	obs_data_release(settings);
@@ -291,12 +291,14 @@ PropertiesView::PropertiesView(
 
 void PropertiesView::reloadProperties()
 {
+#if 0
 	if (widget)
 		widget->deleteLater();
 	widget = new QWidget();
+#endif
 	QFormLayout* layout = new QFormLayout;
 	layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
-	widget->setLayout(layout);
+	this->setLayout(layout);
 
 	QSizePolicy mainPolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -372,7 +374,7 @@ QWidget* PropertiesView::addCheckbox(obs_property_t* prop)
 
 	QCheckBox* checkbox = new QCheckBox(QT_UTF8(desc));
 	checkbox->setCheckState(val ? Qt::Checked : Qt::Unchecked);
-	return widget;
+	return checkbox;
 }
 
 QWidget* PropertiesView::addList(obs_property_t* prop)
